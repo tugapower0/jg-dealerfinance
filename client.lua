@@ -8,18 +8,14 @@ local function addApp()
     local added, errorMessage = exports["lb-phone"]:AddCustomApp({
         identifier = identifier, -- unique app identifier
 
-        name = "React TS",
-        description = "Template app using React and TypeScript.",
-        developer = "LB",
+        name = "JG Finance",
+        description = "Manage your financed vehicles.",
+        developer = "WL",
 
         defaultApp = false, --  set to true, the app will automatically be added to the player's phone
         size = 59812, -- the app size in kb
         -- price = 0, -- OPTIONAL make players pay with in-game money to download the app
 
-        images = { -- OPTIONAL array of screenshots of the app, used for showcasing the app
-            "https://cfx-nui-" .. GetCurrentResourceName() .. "/ui/dist/screenshot-light.png",
-            "https://cfx-nui-" .. GetCurrentResourceName() .. "/ui/dist/screenshot-dark.png"
-        },
 
         ui = "http://localhost:3000",
         -- ui = GetCurrentResourceName() .. "/ui/dist/index.html",
@@ -42,38 +38,56 @@ AddEventHandler("onResourceStart", function(resource)
     end
 end)
 
-local directions = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" }
-local oldYaw, oldDirection
+local vehicles = {}
 
-RegisterNUICallback("getDirection", function(data, cb)
-    cb(oldDirection)
+RegisterNUICallback("Fetching", function(data,cb)
+    local action = data.action
+    if action == "fetching" then
+        lib.callback("fetchfinancedvehicles", false, function(test)
+            vehicles = test
+            cb(vehicles)
+        end)
+    end
 end)
 
-RegisterNUICallback("drawNotification", function(data, cb)
-    BeginTextCommandThefeedPost("STRING")
-    AddTextComponentSubstringPlayerName(data.message)
-    EndTextCommandThefeedPostTicker(false, false)
+RegisterNUICallback("Payment", function(data,cb)
+    local action = data.action
+    local index = data.index
+    local amount = data.amount
+    local type = data.type
+    local data2 = data.data 
 
-    cb("ok")
+    if action == "payment" then
+        if not vehicles[index+1] then
+            return cb(false)
+        end
+        print("Payment2")
+
+            local vehicle = vehicles[index+1]
+            local vehicleData = json.decode(vehicle.finance_data)
+            local newdata = json.encode(data2)
+            local vehiclepay = nil
+            if data.type == "payment" then vehiclepay = vehicleData.recurring_payment else vehiclepay =  vehicleData.total - vehicleData.paid end
+
+            if not (vehicleData.vehicle == newdata.vehicle or amount == vehiclepay) then
+                return cb(false)
+            end
+            print("Calling MakePayment")
+            lib.callback("MakePayment", false, function(data)
+                if not data then
+                    return cb(false)
+                end
+                lib.callback("fetchfinancedvehicles", false, function(test)
+                    vehicles = test
+                    cb(vehicles)
+                end)
+            end, vehicleData.vehicle, amount, type, vehicle)
+            -- Do something with the vehicle
+
+    end
 end)
 
-while true do
-    Wait(25)
-
-    local yaw = math.floor(360.0 - ((GetFinalRenderedCamRot(0).z + 360.0) % 360.0) + 0.5)
-
-    if yaw == 360 then
-        yaw = 0
-    end
-
-    -- get closest direction
-    if oldYaw ~= yaw then
-        oldYaw = yaw
-        oldDirection = yaw .. "° " .. directions[math.floor((yaw + 22.5) / 45.0) % 8 + 1]
-
-        exports["lb-phone"]:SendCustomAppMessage(identifier, {
-            type = "updateDirection",
-            direction = oldDirection
-        })
-    end
-end
+-- -- Add a callback to populate the vehicles table
+-- lib.callback("fetchfinancedvehicles", false, function(test)
+--     vehicles = test
+-- end)

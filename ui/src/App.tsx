@@ -7,138 +7,7 @@ const devMode = !window?.["invokeNative"]
 const App = () => {
 	const [theme, setTheme] = useState("light")
 	const [site, setSite] = useState("home")
-	const [vehicles, setVehicles] = useState<Vehicle[]>([
-		{
-			model: "XLS",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "T20",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Rhinehart",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Schafter V12",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Hakuchou Drag",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Hakuchou Drag",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Hakuchou Drag",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Hakuchou Drag",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Hakuchou Drag",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Hakuchou Drag",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Hakuchou Drag",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Hakuchou Drag",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-		{
-			model: "Hakuchou Drag",
-			plate: "TEST1233",
-			paid: 12500,
-			total: 30000,
-			totalpayments: 12,
-			paidpayments: 5,
-			perpayments: 2500,
-			open: false,
-		},
-	])
+	const [vehicles, setVehicles] = useState<Vehicle[]>([])
 	const appDiv = useRef(null)
 
 	const {
@@ -165,6 +34,25 @@ const App = () => {
 			onSettingsChange((settings: any) => setTheme(settings.display.theme))
 		}
 	}, [])
+
+	useEffect(() => {
+		fetchNui("Fetching", {action: "fetching"}, "jg-dealerfinance").then((data:any) => {
+			if (!data) return;
+			setVehicles(data.map((item: any) => {
+				const vehicle = JSON.parse(item.finance_data);
+				return {
+					model: vehicle.vehicle,
+					plate: vehicle.plate,
+					paid: Number(vehicle.paid),
+					total: Number(vehicle.total),
+					totalpayments: vehicle.total_payments,
+					paidpayments: vehicle.payments_complete,
+					perpayments: Number(vehicle.recurring_payment),
+					open: false,
+				};
+			}));
+		});
+	},[])
 	
 
 	const radius = 50
@@ -172,15 +60,17 @@ const App = () => {
 	const left = vehicles.reduce((sum, vehicle) => sum + (vehicle.total - vehicle.paid), 0);
 	const paid = vehicles.reduce((sum, vehicle) => sum + vehicle.paid, 0); 
 	const totalamount = vehicles.reduce((sum, vehicle) => sum + vehicle.total, 0);
-	const progress = ((paid / (totalamount)) * circumference)
-	const topercent = ((paid / (totalamount)) * 100).toFixed(0)
+	const progress = isNaN(((paid / (totalamount)) * circumference)) ? 0 : ((paid / (totalamount)) * circumference);
+	const topercent = isNaN(((paid / (totalamount)) * 100)) ? 100 : ((paid / (totalamount)) * 100).toFixed(0)
 	const money = left.toLocaleString('en-US')
 	const payment = vehicles.reduce((sum, vehicle) => sum + vehicle.perpayments, 0)
 	const amount = vehicles.length
 
 	const getProgressColor = (percent: number) => {
-		if (percent < 50) {
+		if (percent < 25) {
 		  return '#ff0000';
+		} else if (percent < 50) {
+		  return '#ff8000';
 		} else if (percent < 75) {
 		  return '#ffbf00';
 		} else {
@@ -201,6 +91,44 @@ const App = () => {
 			}
 		}))
 	};
+
+	const paymenu = (index: number, type: string, amount:number, data: object) => {
+		setPopUp({
+			title: "Make a payment of " + amount + "$",
+			description: "Confirm your choice",
+			buttons: [
+				{
+					title: "Cancel",
+					color: "red",
+					cb: () => {
+						console.log("Cancel")
+					}
+				},
+				{
+					title: "Confirm",
+					color: "blue",
+					cb: () => {
+						console.log("index: ",index)
+						fetchNui("Payment", {action: "payment", index: index, type: type, amount: amount, data: data}, "jg-dealerfinance").then((data:any) => {
+							if (!data) return;
+							setVehicles(data.map((item: any) => {
+								const vehicle = JSON.parse(item.finance_data);
+								return {
+									model: vehicle.vehicle,
+									paid: Number(vehicle.paid),
+									total: Number(vehicle.total),
+									totalpayments: vehicle.total_payments,
+									paidpayments: vehicle.payments_complete,
+									perpayments: Number(vehicle.recurring_payment),
+									open: false,
+								};
+							}));
+						});
+					}
+				}
+			]
+		})
+	}
 
 	return (
 		<AppProvider>
@@ -272,7 +200,7 @@ const App = () => {
 									>
 										{payment.toLocaleString("en-US")}$
 									</h1>
-									<div className="smt">For the next payment (total)</div>
+									<div className="smt">Next payment</div>
 								</div>
 							</div>
 						</>
@@ -287,7 +215,7 @@ const App = () => {
 									<div className="vehicle">
 										<div className="online">
 											<div className="vmodel">Vehicle Model</div>
-											<div className="remaining">Remaining</div>
+											<div className="remaining">Remaining($)</div>
 										</div>
 									</div>
 									{vehicles.map((v, index) => (
@@ -302,8 +230,7 @@ const App = () => {
 													...
 												</button>
 											</div>
-											{v.open && (
-												<div className="extra">
+												<div className={`extra${v.open ? " open" : " closed"}`}>
 													<svg
 														width="120"
 														height="120"
@@ -318,14 +245,14 @@ const App = () => {
 															className="progress-bar__background"
 														/>
 														<circle
-															stroke={getProgressColor(Number(((v.paid / (v.total)) * 100).toFixed(0)))}
+															stroke={getProgressColor(Number(((v.paidpayments / v.totalpayments) * 100).toFixed(0)))}
 															fill="transparent"
 															r="50"
 															cx="60"
 															cy="60"
 															strokeWidth="10"
 															strokeDasharray={circumference}
-															strokeDashoffset={circumference - ((v.paid / (v.total)) * circumference)}
+															strokeDashoffset={circumference - ((v.paidpayments / (v.totalpayments)) * circumference)}
 															className="progress-bar__value"
 														/>
 														<text
@@ -334,14 +261,30 @@ const App = () => {
 															textAnchor="middle"
 															dominantBaseline="middle"
 															className="circlecenter"
-															style={{ fill: getProgressColor(Number(((v.paid / (v.total)) * 100).toFixed(0))),}}
+															style={{ fill: getProgressColor(Number(((v.paidpayments / (v.totalpayments)) * 100).toFixed(0))), userSelect: "none" }}
 														>
 															{v.paidpayments} / {v.totalpayments}
 														</text>
 													</svg>
-													{/* <div className="circlecenter" style={{ color: getProgressColor(Number(((v.paid / (v.total)) * 100).toFixed(0))),}}>{v.paidpayments} / {v.totalpayments}</div> */}
+													<div className="buttons">
+														<button className="payb makep" onClick={() => paymenu(index,"payment", v.perpayments, v)}>Make payment</button>
+														<button className="payb fullp" onClick={() => paymenu(index, "full", v.total - v.paid, v)}>Pay in full</button>
+													</div>
+													<div className="info">
+														<div className="infoitem">
+															<div className="infoitemname">Total</div>
+															<div className="infoitemvalue">{v.total.toLocaleString("en-US")}$</div>
+														</div>
+														<div className="infoitem">
+															<div className="infoitemname">Paid</div>
+															<div className="infoitemvalue">{v.paid.toLocaleString("en-US")}$</div>
+														</div>
+														<div className="infoitem">
+															<div className="infoitemname">Per payment</div>
+															<div className="infoitemvalue">{v.perpayments.toLocaleString("en-US")}$</div>
+														</div>
+													</div>
 												</div>
-												)}
 										</div>
 									))}
 								</div>
