@@ -6,7 +6,7 @@ end)
 
 lib.callback.register('MakePayment', function(source, vehicle, amount, paymenttype, vehicleData)
     local Player = Framework.GetPlayerData(source)
-    local framework = Config.Framework  -- Assuming Config.Framework holds the current framework ("ESX" or "QBCore")
+    local framework = Config.Framework 
 
     if framework == "ESX" then
         if Player.getAccount('bank').money < amount then
