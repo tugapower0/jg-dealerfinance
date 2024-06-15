@@ -4,10 +4,20 @@ lib.callback.register('fetchfinancedvehicles', function()
     })
 end)
 
-lib.callback.register('MakePayment', function(source,vehicle, amount, paymenttype, vehicleData)
+lib.callback.register('MakePayment', function(source, vehicle, amount, paymenttype, vehicleData)
     local Player = Framework.GetPlayerData(source)
+    local framework = Config.Framework  -- Assuming Config.Framework holds the current framework ("ESX" or "QBCore")
 
-    if Player.getAccount('bank').money < amount then
+    if framework == "ESX" then
+        if Player.getAccount('bank').money < amount then
+            return false
+        end
+    elseif framework == "QBCore" then
+        if Player.Functions.GetMoney('bank') < amount then
+            return false
+        end
+    else
+        print("Unknown framework specified in Config.Framework")
         return false
     end
 
@@ -17,24 +27,38 @@ lib.callback.register('MakePayment', function(source,vehicle, amount, paymenttyp
         finance_data.paid = finance_data.paid + amount
         finance_data.payments_complete = finance_data.payments_complete + 1
         newdata.finance_data = json.encode(finance_data)
-        MySQL.Async.execute("UPDATE "..Framework.VehiclesTable.." SET finance_data = @finance_data WHERE "..Framework.PlayerIdentifier.." = @identifier AND plate = @vehicle_id", {
+        MySQL.Async.execute("UPDATE " .. Framework.VehiclesTable .. " SET finance_data = @finance_data WHERE " .. Framework.PlayerIdentifier .. " = @identifier AND plate = @vehicle_id", {
             ["@finance_data"] = newdata.finance_data,
             ["@identifier"] = Framework.GetPlayerIdentifier(source),
             ["@vehicle_id"] = vehicleData.plate
-        })
-        Player.removeAccountMoney('bank', amount)
-        print("Payments Complete2")
-        return true
+        }, function(rowsChanged)
+            if framework == "ESX" then
+                Player.removeAccountMoney('bank', amount)
+                print("Payments Complete2")
+                return true
+            elseif framework == "QBCore" then
+                Player.Functions.RemoveMoney('bank', amount)
+                print("Payments Complete2")
+                return true
+            end
+        end)
     else
         print(vehicleData.plate)
-        MySQL.Async.execute("UPDATE "..Framework.VehiclesTable.." SET finance_data = NULL, financed = 0 WHERE "..Framework.PlayerIdentifier.." = @identifier AND plate = @data", {
+        MySQL.Async.execute("UPDATE " .. Framework.VehiclesTable .. " SET finance_data = NULL, financed = 0 WHERE " .. Framework.PlayerIdentifier .. " = @identifier AND plate = @data", {
             ["@identifier"] = Framework.GetPlayerIdentifier(source),
             ["@data"] = vehicleData.plate
-        })
-        Player.removeAccountMoney('bank', amount)
-        print("Payments Complete3")
-        return true
+        }, function(rowsChanged)
+            if framework == "ESX" then
+                Player.removeAccountMoney('bank', amount)
+                print("Payments Complete3")
+                return true
+            elseif framework == "QBCore" then
+                Player.Functions.RemoveMoney('bank', amount)
+                print("Payments Complete3")
+                return true
+            end
+        end)
     end
 
-    return falsew
+    return false
 end)

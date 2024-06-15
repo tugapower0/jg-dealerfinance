@@ -1,3 +1,3 @@
 Config = {}
 
-Config.Framework = "ESX"
+Config.Framework = "QBCore" -- ESX or QBCore
