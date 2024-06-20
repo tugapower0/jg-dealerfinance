@@ -17,8 +17,8 @@ local function addApp()
         -- price = 0, -- OPTIONAL make players pay with in-game money to download the app
 
 
-        ui = "http://localhost:3000",
-        -- ui = GetCurrentResourceName() .. "/ui/dist/index.html",
+        -- ui = "http://localhost:3000",
+        ui = GetCurrentResourceName() .. "/ui/dist/index.html",
 
         icon = "https://cfx-nui-" .. GetCurrentResourceName() .. "/ui/dist/icon.svg",
 
@@ -82,12 +82,6 @@ RegisterNUICallback("Payment", function(data,cb)
                     cb(vehicles)
                 end)
             end, vehicleData.vehicle, amount, type, vehicle)
-            -- Do something with the vehicle
 
     end
 end)
-
--- -- Add a callback to populate the vehicles table
--- lib.callback("fetchfinancedvehicles", false, function(test)
---     vehicles = test
--- end)

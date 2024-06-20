@@ -5,6 +5,7 @@ interface CircularProgressProps {
 
   interface Vehicle {
     model: string;
+    plate: string;
     paid?: number;
     total?: number;
     totalpayments?: number; // Total amount of payments

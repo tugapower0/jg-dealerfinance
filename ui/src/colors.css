@@ -1,15 +1,27 @@
 :root {
-    --background-primary: #f5f5f5;
+    --background-primary: #dadada;
     --background-highlight: rgb(220, 220, 220);
 
     --text-primary: #000000;
-    --text-secondary: #8e8e93;
+    --text-secondary: #636363;
+
+    --box-color: rgba(136, 136, 136, 0.42);
+
+    --orange: rgb(214, 140, 1);
+
+    --circle-stroke: rgba(204, 205, 206, 0.705);
 }
 
 [data-theme='dark'] {
     --background-primary: #000000;
     --background-highlight: rgb(20, 20, 20);
 
+
+    --box-color: #1c1c1e;
+    --orange: rgb(255, 166, 0);
+
     --text-primary: #f2f2f7;
-    --text-secondary: #6f6f6f;
+    --text-secondary: #afafaf;
+
+    --circle-stroke: rgba(255, 255, 255, 0.705);
 }

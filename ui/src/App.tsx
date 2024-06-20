@@ -7,7 +7,18 @@ const devMode = !window?.["invokeNative"]
 const App = () => {
 	const [theme, setTheme] = useState("light")
 	const [site, setSite] = useState("home")
-	const [vehicles, setVehicles] = useState<Vehicle[]>([])
+	const [vehicles, setVehicles] = useState<Vehicle[]>([
+		// {
+		// 	model: "BMW X5",
+		// 	plate: "ABC123",
+		// 	paid: 10000,
+		// 	total: 50000,
+		// 	totalpayments: 12,
+		// 	paidpayments: 6,
+		// 	perpayments: 5000,
+		// 	open: false,
+		// },
+	])
 	const appDiv = useRef(null)
 
 	const {
@@ -38,21 +49,36 @@ const App = () => {
 	useEffect(() => {
 		fetchNui("Fetching", {action: "fetching"}, "jg-dealerfinance").then((data:any) => {
 			if (!data) return;
-			setVehicles(data.map((item: any) => {
-				const vehicle = JSON.parse(item.finance_data);
-				return {
-					model: vehicle.vehicle,
-					plate: vehicle.plate,
-					paid: Number(vehicle.paid),
-					total: Number(vehicle.total),
-					totalpayments: vehicle.total_payments,
-					paidpayments: vehicle.payments_complete,
-					perpayments: Number(vehicle.recurring_payment),
-					open: false,
-				};
-			}));
+			setVehicles((prevVehicles) => {
+				const updatedVehicles = data.map((item: any) => {
+					const vehicle = JSON.parse(item.finance_data);
+					const existingVehicle = prevVehicles.find((v) => v.plate === vehicle.plate);
+					if (existingVehicle) {
+						return {
+							...existingVehicle,
+							paid: Number(vehicle.paid),
+							total: Number(vehicle.total),
+							totalpayments: vehicle.total_payments,
+							paidpayments: vehicle.payments_complete,
+							perpayments: Number(vehicle.recurring_payment),
+							open: existingVehicle.open // Preserve the open state
+						};
+					} else {
+						return {
+							model: vehicle.vehicle,
+							plate: vehicle.plate,
+							paid: Number(vehicle.paid),
+							total: Number(vehicle.total),
+							totalpayments: vehicle.total_payments,
+							paidpayments: vehicle.payments_complete,
+							perpayments: Number(vehicle.recurring_payment),
+						};
+					}
+				});
+				return updatedVehicles;
+			});
 		});
-	},[])
+	}, [])
 	
 
 	const radius = 50
@@ -143,7 +169,7 @@ const App = () => {
 							<div className="content">
 								<div className="boxes">
 									<h1 className="bgt">{amount}</h1>
-									<div className="smt">Vehicles financed</div>
+									<div className="smt">Vehicle{amount > 1 ? "s" : ""} financed</div>
 								</div>
 								<div className="boxes">
 									<svg
