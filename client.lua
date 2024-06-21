@@ -1,4 +1,4 @@
-local identifier = "react-ts-template"
+local identifier = "jg-dealerfinance"
 
 while GetResourceState("lb-phone") ~= "started" do
     Wait(500)
@@ -7,6 +7,8 @@ end
 local function addApp()
     local added, errorMessage = exports["lb-phone"]:AddCustomApp({
         identifier = identifier, -- unique app identifier
+
+        
 
         name = "JG Finance",
         description = "Manage your financed vehicles.",
@@ -20,7 +22,7 @@ local function addApp()
         -- ui = "http://localhost:3000",
         ui = GetCurrentResourceName() .. "/ui/dist/index.html",
 
-        icon = "https://cfx-nui-" .. GetCurrentResourceName() .. "/ui/dist/icon.svg",
+        icon = "https://cfx-nui-" .. GetCurrentResourceName() .. "/ui/icon.png",
 
         fixBlur = true -- set to true if you use em, rem etc instead of px in your css
     })

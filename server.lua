@@ -16,6 +16,9 @@ lib.callback.register('MakePayment', function(source, vehicle, amount, paymentty
         local newdata = vehicleData
         local finance_data = json.decode(newdata.finance_data)
         finance_data.paid = finance_data.paid + amount
+        finance_data.seconds_to_next_payment = Config.FinancePaymentInterval * 60 * 60
+        finance_data.seconds_to_repo = 0
+        finance_data.payment_failed = false
         finance_data.payments_complete = finance_data.payments_complete + 1
         newdata.finance_data = json.encode(finance_data)
         if finance_data.payments_complete >= finance_data.total_payments then
