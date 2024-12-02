@@ -8,7 +8,7 @@ author "Wyknx & Lindholm"
 
 client_script "client.lua"
 server_scripts { "@oxmysql/lib/MySQL.lua", "server.lua",  }
-shared_scripts { "@jg-dealerships/config.lua", '@ox_lib/init.lua', "framework.lua", }
+shared_scripts { '@ox_lib/init.lua', "framework.lua", }
 
 files {
     "ui/dist/**/*",

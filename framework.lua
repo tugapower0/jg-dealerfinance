@@ -1,3 +1,17 @@
+Config = {}
+
+if GetResourceState("jg-dealerships") == "started" then
+    local res = pcall(function()
+        Config = exports["jg-dealerships"]:config()
+    end)
+
+    if not res then
+        print("^3[WARNING] You are running an old version of jg-dealerships, you need to be using version 1.2 or newer")
+    end
+else
+    print("^3[WARNING] jg-dealerships is not running")
+end
+
 QBCore, ESX = nil, nil
 
 Framework = {
@@ -5,22 +19,17 @@ Framework = {
     Server = {},
 }
 
-
-
 if Config.Framework == "QBCore" then
     QBCore = exports['qb-core']:GetCoreObject()
 
     Framework.VehiclesTable = "player_vehicles"
     Framework.PlayerIdentifier = "citizenid"
-
 elseif Config.Framework == "ESX" then
     ESX = exports['es_extended']:getSharedObject()
 
     Framework.VehiclesTable = "owned_vehicles"
     Framework.PlayerIdentifier = "owner"
-
 end
-
 
 function Framework.GetPlayerIdentifier(source)
     if Config.Framework == "QBCore" then
