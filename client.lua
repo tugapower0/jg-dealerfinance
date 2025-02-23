@@ -1,41 +1,55 @@
-local identifier = "jg-dealerfinance"
-
-while GetResourceState("lb-phone") ~= "started" do
+while GetResourceState('qs-smartphone-pro') ~= 'started' do
     Wait(500)
 end
 
+local ui = 'https://cfx-nui-' .. GetCurrentResourceName() .. '/ui/'
+
 local function addApp()
-    local added, errorMessage = exports["lb-phone"]:AddCustomApp({
-        identifier = identifier, -- unique app identifier
-
-        
-
-        name = "JG Finance",
-        description = "Manage your financed vehicles.",
-        developer = "WL",
-
-        defaultApp = false, --  set to true, the app will automatically be added to the player's phone
-        size = 59812, -- the app size in kb
-        -- price = 0, -- OPTIONAL make players pay with in-game money to download the app
-
-
-        -- ui = "http://localhost:3000",
-        ui = GetCurrentResourceName() .. "/ui/dist/index.html",
-
-        icon = "https://cfx-nui-" .. GetCurrentResourceName() .. "/ui/icon.png",
-
-        fixBlur = true -- set to true if you use em, rem etc instead of px in your css
+    local added, errorMessage = exports['qs-smartphone-pro']:addCustomApp({
+        app = 'dealerfinance',
+        image = ui .. 'icon.png',
+        ui = ui .. 'dist/index.html',
+        label = 'JG Finance',
+        job = false,
+        blockedJobs = {},
+        timeout = 5000,
+        creator = 'WL',
+        category = 'social',
+        isGame = false,
+        description = 'Manage your financed vehicles!',
+        age = '16+',
+        extraDescription = {
+            {
+                header = 'JG Finance',
+                head = 'Manage your financed vehicles!',
+                image = 'https://media.istockphoto.com/photos/abstract-background-wallpaper-picture-id952039286?b=1&k=20&m=952039286&s=170667a&w=0&h=LmOcMt7FHxFUAr2bOSfTUPV9sQhME6ABtAYLM0cMkR4=',
+                footer = 'Em teste, NAO USAR!'
+            }
+        }
     })
 
     if not added then
-        print("Could not add app:", errorMessage)
+        return print('Could not add app:', errorMessage)
     end
+    print('App added')
 end
 
-addApp()
+local function removeApp()
+    local removed, errorMessage = exports['qs-smartphone-pro']:removeCustomApp('dealerfinance')
+    if not removed then
+        return print('Failed to remove app', errorMessage)
+    end
+    print('App removed')
+end
 
-AddEventHandler("onResourceStart", function(resource)
-    if resource == "lb-phone" then
+RegisterCommand('removeapp', function()
+    removeApp()
+end, false)
+
+CreateThread(addApp)
+
+AddEventHandler('onResourceStart', function(resource)
+    if resource == 'qs-smartphone-pro' then
         addApp()
     end
 end)
